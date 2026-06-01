@@ -324,22 +324,25 @@
       `;
     }
 
-    // FIXED: Added fallback wrapper logic so the application loads seamlessly when missing the backend wrapper environment
+    // FIXED: Defensive Environment Mock Wrapper.
+    // If the browser fails to load custom wrapper scripts, this safely hooks the init events 
+    // to guarantee the UI elements bootstrap seamlessly on GitHub pages or a local server.
     if (!window.elementSdk) {
       window.elementSdk = {
+        config: defaultConfig,
         init: function(options) {
-          console.warn("Element SDK scripts not physically detected. Emulating environment config...");
+          console.warn("Custom SDK scripts missing or unreadable. Emulating preview environment runtime configs...");
           if (options && typeof options.onConfigChange === 'function') {
             options.onConfigChange(defaultConfig);
           }
         },
         setConfig: function(updatedConfig) {
-          console.log("Mock config updated sync:", updatedConfig);
+          console.log("Local Config Synced:", updatedConfig);
         }
       };
     }
 
-    // Element SDK init
+    // Element SDK init hook execution
     window.elementSdk.init({
       defaultConfig,
       onConfigChange: async (config) => { render(); },
@@ -361,6 +364,7 @@
       ])
     });
 
+    // Forced initial call guarantee 
     render();
   </script>
  </body>
